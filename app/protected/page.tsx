@@ -1,20 +1,18 @@
-import { redirect } from "next/navigation";
-
-import { createClient } from "@/lib/supabase/server";
 import { InfoIcon } from "lucide-react";
 import { FetchDataSteps } from "@/components/tutorial/fetch-data-steps";
 import { Suspense } from "react";
+import { api } from "@/utility/api";
 
 async function UserDetails() {
-  const supabase = await createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
-  );
-  const { data, error } = await supabase.auth.getClaims();
+  const response = await api({ url: "/auth/users", method: "GET" });
 
-  if (error || !data?.claims) {
-    redirect("/auth/login");
+  if (response.status != 200) {
+    console.log("Error ");
+    return;
   }
+
+  const data = response.data.data;
+  console.log(data);
 
   return JSON.stringify(data.claims, null, 2);
 }

@@ -3,15 +3,19 @@ import axios from "axios";
 interface APIInputType {
   url: string;
   method: "GET" | "POST" | "PUT" | "DELETE";
-  header?: Object;
-  data?: Object;
+  header?: object;
+  data?: object;
 }
 
 export function api(input: APIInputType) {
   try {
     switch (input.method) {
       case "GET":
-        return axios.get(`/api/${input.url}`);
+        return axios({
+          url: `http://localhost:3000/api/${input.url}`,
+          method: "get",
+          responseType: "json",
+        });
       case "POST":
         return axios.post(`/api/${input.url}`, input.data);
       case "PUT":
