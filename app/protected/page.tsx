@@ -6,7 +6,10 @@ import { FetchDataSteps } from "@/components/tutorial/fetch-data-steps";
 import { Suspense } from "react";
 
 async function UserDetails() {
-  const supabase = await createClient();
+  const supabase = await createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
+  );
   const { data, error } = await supabase.auth.getClaims();
 
   if (error || !data?.claims) {

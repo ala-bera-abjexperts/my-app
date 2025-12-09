@@ -15,13 +15,18 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { api } from "@/utility/api";
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [userdata, setUserData] = useState<{
+    name: string;
+    password: string;
+    email: string;
+    phone: string;
+  }>({ name: "", password: "", email: "", phone: "" });
   const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,25 +34,24 @@ export function SignUpForm({
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
-    setIsLoading(true);
-    setError(null);
 
-    if (password !== repeatPassword) {
+    if (userdata.password !== repeatPassword) {
       setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/protected`,
-        },
+      const response = await api({
+        url: "/auth/register",
+        method: "POST",
+        data: userdata,
       });
-      if (error) throw error;
+      if (response.status != 200) {
+        const data = response.data;
+        setError(data.message);
+      }
+      console.log(response.data);
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -67,14 +71,42 @@ export function SignUpForm({
           <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
+                <Label htmlFor="Name">Name</Label>
+                <Input
+                  id="name"
+                  type="name"
+                  placeholder="John Smith"
+                  required
+                  value={userdata.name}
+                  onChange={(e) =>
+                    setUserData({ ...userdata, name: e.target.value })
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="m@example.com"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={userdata.email}
+                  onChange={(e) =>
+                    setUserData({ ...userdata, email: e.target.value })
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  type="phone"
+                  placeholder="918899665544"
+                  required
+                  value={userdata.phone}
+                  onChange={(e) =>
+                    setUserData({ ...userdata, phone: e.target.value })
+                  }
                 />
               </div>
               <div className="grid gap-2">
@@ -85,8 +117,10 @@ export function SignUpForm({
                   id="password"
                   type="password"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={userdata.password}
+                  onChange={(e) =>
+                    setUserData({ ...userdata, password: e.target.value })
+                  }
                 />
               </div>
               <div className="grid gap-2">
